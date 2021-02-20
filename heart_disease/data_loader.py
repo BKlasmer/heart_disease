@@ -15,6 +15,16 @@ class DataLoader(object):
         self.dataset = self.prepare_dataset()
 
     def prepare_dataset(self) -> pd.DataFrame:
+        """ Prepares the heart disease dataset, which performs the following:
+        - Ingesting the data
+        - Handling missing data
+        - One hot encoding the categorical data
+        - Apply normalisation
+        - Binarise the label
+
+        Returns:
+            pd.DataFrame: Heart disease dataset
+        """
         dataset = self._ingest_data()
         dataset = self._handle_missing_data(dataset)
         dataset = self._handle_categorical(dataset)
@@ -54,6 +64,14 @@ class DataLoader(object):
         return dataset
 
     def _handle_missing_data(self, dataset: pd.DataFrame) -> pd.DataFrame:
+        """ Replace all missing data in the dataset
+
+        Args:
+            dataset (pd.DataFrame): Heart disease dataset with missing values
+
+        Returns:
+            pd.DataFrame: Heart disease dataset without missing values
+        """
 
         self._logger.info(f"{len(dataset.loc[dataset['Thal'] == '?', 'Thal'])} missing values in Thal, replaced with 3.0 (= normal).")
         dataset.loc[dataset["Thal"] == "?", "Thal"] = '3.0'
@@ -67,6 +85,14 @@ class DataLoader(object):
         return dataset
 
     def _handle_categorical(self, dataset: pd.DataFrame) -> pd.DataFrame:
+        """ One hot encodes all the categorical fields in the dataset
+
+        Args:
+            dataset (pd.DataFrame): Heart disease dataset with categorical features
+
+        Returns:
+            pd.DataFrame: Heart disease dataset with one-hot encoded categorical features
+        """
         
         one_hot_dict = {
             "Chest Pain Type": ["Chest Pain Typical", "Chest Pain Atypical", "Chest Pain Non-anginal", "Chest Pain Asymptomatic"],
@@ -84,6 +110,14 @@ class DataLoader(object):
         return dataset
 
     def _apply_normalisation(self, dataset: pd.DataFrame) -> pd.DataFrame:
+        """ Normalises the dataset to values between 0 and 1
+
+        Args:
+            dataset (pd.DataFrame): Heart disease dataset with unbounded features
+
+        Returns:
+            pd.DataFrame: Heart disease dataset with features bounded between 0 and 1
+        """
 
         variable_columns = ["Age", "Resting Blood Pressure", "Cholestoral", "Maximum Heart Rate", "ST Depression", "Number of Major Vessels"]
 
@@ -95,6 +129,14 @@ class DataLoader(object):
 
     @staticmethod
     def _minmax(column_values: np.ndarray) -> np.ndarray:
+        """ Applies min max normalisation on a numpy array
+
+        Args:
+            column_values (np.ndarray): Unbounded numpy array
+
+        Returns:
+            np.ndarray: Min max normalised numpy array
+        """
         min_val = np.min(column_values)
         max_val = np.max(column_values)
 
