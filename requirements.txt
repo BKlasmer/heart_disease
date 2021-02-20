@@ -1,0 +1,7 @@
+# Dependencies captured in ./setup.py
+-e ./
+# Extra test/development dependencies
+numpy==1.19.5
+pytest==5.3.5
+jupyter==1.0.0
+pre-commit==2.6.0

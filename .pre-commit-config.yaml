@@ -1,0 +1,40 @@
+repos:
+  - repo: git://github.com/pre-commit/pre-commit-hooks
+    rev: v3.1.0
+    hooks:
+      - id: detect-private-key
+      - id: check-added-large-files
+      - id: check-merge-conflict
+      - id: check-executables-have-shebangs
+      - id: detect-private-key
+      - id: forbid-new-submodules
+      - id: trailing-whitespace
+      - id: check-yaml
+      - id: check-xml
+      - id: check-json
+      - id: check-ast
+      - id: name-tests-test
+        args: [--django]
+
+  - repo: https://github.com/syntaqx/git-hooks
+    rev: v0.0.16
+    hooks:
+      - id: forbid-binary
+
+  - repo: https://github.com/psf/black
+    rev: 20.8b1
+    hooks:
+      - id: black
+        language_version: python3.7
+        args: [--line-length=128]
+
+  - repo: https://github.com/kynan/nbstripout
+    rev: 0.3.8
+    hooks:
+      - id: nbstripout
+        files: ".ipynb"
+
+  - repo: https://gitlab.com/PyCQA/flake8
+    rev: master
+    hooks:
+      - id: flake8
