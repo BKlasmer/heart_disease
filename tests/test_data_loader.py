@@ -93,4 +93,16 @@ def test_normalisation():
     # Verify
     assert desired == actual
 
-    # Cleanup - none necessary    
+    # Cleanup - none necessary
+
+def test_prepare_dataset():
+    # Setup - none necessary
+    # Exercise
+    Loader = DataLoader()
+    dataset = Loader.dataset
+    summary = dataset.describe(include='all')
+
+    # Verify
+    assert all([a == 1 for a in summary.loc["max"]])
+    assert all([a == 303 for a in summary.loc["count"]])
+
