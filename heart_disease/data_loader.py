@@ -3,7 +3,10 @@
 
 import pandas as pd
 import numpy as np
+from sklearn.utils import resample
+from sklearn.model_selection import train_test_split
 from heart_disease.utils import Logging
+
 
 """ Class to ingest UCI Heart Disease Data Set - https://archive.ics.uci.edu/ml/datasets/Heart+Disease
 """
@@ -39,6 +42,15 @@ class DataLoader(object):
         dataset = dataset.join(heart_disease)
 
         return dataset
+
+    def _features_and_labels_to_numpy(self):
+        dataset = self._dataset
+        labels = np.array(dataset["Heart Disease"])
+
+        dataset.drop("Heart Disease", axis=1)
+        features = np.array(dataset)
+        feature_columns = list(features.columns)
+        return labels, features, feature_columns
 
     def _ingest_data(self) -> pd.DataFrame:
         """Ingests the processed Cleveland dataset from https://archive.ics.uci.edu/ml/datasets/Heart+Disease
