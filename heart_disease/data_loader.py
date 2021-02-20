@@ -2,6 +2,7 @@
 # -*- coding: latin-1 -*-
 
 import pandas as pd
+import numpy as np
 from heart_disease.utils import Logging
 
 """ Class to ingest UCI Heart Disease Data Set - https://archive.ics.uci.edu/ml/datasets/Heart+Disease
@@ -13,11 +14,12 @@ class DataLoader(object):
         self._logger.info("Initialise Data Loader")
         self.dataset = self.prepare_dataset()
 
-    
     def prepare_dataset(self) -> pd.DataFrame:
         dataset = self._ingest_data()
         dataset = self._handle_missing_data(dataset)
         dataset = self._handle_categorical(dataset)
+        dataset = self._apply_normalisation(dataset)
+        
         return dataset
 
     def _ingest_data(self) -> pd.DataFrame:
@@ -75,3 +77,20 @@ class DataLoader(object):
             dataset = dataset.drop(column, axis=1)
 
         return dataset
+
+    def _apply_normalisation(self, dataset: pd.DataFrame) -> pd.DataFrame:
+
+        variable_columns = ["Age", "Resting Blood Pressure", "Cholestoral", "Maximum Heart Rate", "ST Depression", "Number of Major Vessels"]
+
+        for column in variable_columns:
+            column_values = dataset[column].to_numpy()
+            dataset[column] = self._minmax(column_values)
+
+        return dataset
+
+    @staticmethod
+    def _minmax(column_values: np.ndarray) -> np.ndarray:
+        min_val = np.min(column_values)
+        max_val = np.max(column_values)
+
+        return (column_values - min_val) / (max_val - min_val)
