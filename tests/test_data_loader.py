@@ -15,9 +15,27 @@ def test_ingest_data():
     Loader = DataLoader()
 
     # Exercise
-    dataset = Loader.ingest_data()
+    dataset = Loader._ingest_data()
 
     # Verify
     assert len(dataset) == desired_rows
     assert len(dataset.columns) == desired_columns
     # Cleanup - none necessary
+
+def test_missing_data():
+    # Setup
+    desired = 0
+    Loader = DataLoader()
+
+    # Exercise
+    dataset = Loader.dataset
+
+    actual = 0
+    for column in dataset.columns:
+        actual += len(dataset.loc[dataset[column] == "?", column])
+
+    # Verify
+    assert desired == actual
+
+    # Cleanup - none necessary
+    
