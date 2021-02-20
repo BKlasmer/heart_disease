@@ -48,10 +48,15 @@ class DataLoader(object):
         if balance:
             train = self._balance_data(train, random_state)
 
-        y_train, x_train, _ = self._features_and_labels_to_numpy(train)
-        y_test, x_test, _ = self._features_and_labels_to_numpy(test)
+        train_labels, train_features, _ = self._features_and_labels_to_numpy(train)
+        test_labels, test_features, _ = self._features_and_labels_to_numpy(test)
 
-        return x_train, y_train, x_test, y_test
+        self._logger.info(f"Training Features Shape: {train_features.shape}")
+        self._logger.info(f"Training Labels Shape: {train_labels.shape}")
+        self._logger.info(f"Testing Features Shape: {test_features.shape}")
+        self._logger.info(f"Testing Labels Shape: {test_labels.shape}")
+
+        return train_features, train_labels, test_features, test_labels
 
     def _balance_data(self, train_set: pd.DataFrame, random_state: int = 42) -> pd.DataFrame:
         heart_disease = train_set[train_set["Heart Disease"] == 1]
