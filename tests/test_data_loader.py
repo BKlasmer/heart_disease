@@ -38,4 +38,22 @@ def test_missing_data():
     assert desired == actual
 
     # Cleanup - none necessary
+
+def test_handle_categorical():
+    # Setup
+    desired = 0
+    Loader = DataLoader()
+    columns = ["Chest Pain Typical", "Chest Pain Atypical", "Chest Pain Non-anginal", "Chest Pain Asymptomatic", "Resting ECG Normal", "Resting ECG Abnormal", "Resting ECG Hypertrophy", "Peak Exercise Slope Up", "Peak Exercise Slope Flat", "Peak Exercise Slope Down", "Thal Normal", "Thal Fixed Defect", "Thal Reversable Defect"]
+
+    # Exercise
+    dataset = Loader.dataset
+    
+    actual = 0
+    for column in columns:
+        actual += len(dataset.loc[dataset[column] > 1, column])
+
+    # Verify
+    assert desired == actual
+
+    # Cleanup - none necessary
     

@@ -17,6 +17,7 @@ class DataLoader(object):
     def prepare_dataset(self) -> pd.DataFrame:
         dataset = self._ingest_data()
         dataset = self._handle_missing_data(dataset)
+        dataset = self._handle_categorical(dataset)
         return dataset
 
     def _ingest_data(self) -> pd.DataFrame:
@@ -47,10 +48,30 @@ class DataLoader(object):
 
     def _handle_missing_data(self, dataset: pd.DataFrame) -> pd.DataFrame:
 
-        self._logger.info(f"{len(dataset.loc[dataset['Thal'] == '?', 'Thal'])} missing values in Thal, replaced with '3' = normal.")
-        dataset.loc[dataset["Thal"] == "?", "Thal"] = 3
+        self._logger.info(f"{len(dataset.loc[dataset['Thal'] == '?', 'Thal'])} missing values in Thal, replaced with 3.0 (= normal).")
+        dataset.loc[dataset["Thal"] == "?", "Thal"] = '3.0'
 
-        self._logger.info(f"{len(dataset.loc[dataset['Number of Major Vessels'] == '?', 'Number of Major Vessels'])} missing values in Number of Major Vessels, replaced with 0.0 = mode.")
-        dataset.loc[dataset["Number of Major Vessels"] == "?", "Number of Major Vessels"] = 0.0
+        self._logger.info(f"{len(dataset.loc[dataset['Number of Major Vessels'] == '?', 'Number of Major Vessels'])} missing values in Number of Major Vessels, replaced with 0.0 (= mode).")
+        dataset.loc[dataset["Number of Major Vessels"] == "?", "Number of Major Vessels"] = '0.0'
+
+        # Change both these column types to floats
+        dataset = dataset.astype({"Thal": "float64", "Number of Major Vessels": "float64"})
+
+        return dataset
+
+    def _handle_categorical(self, dataset: pd.DataFrame) -> pd.DataFrame:
+        
+        one_hot_dict = {
+            "Chest Pain Type": ["Chest Pain Typical", "Chest Pain Atypical", "Chest Pain Non-anginal", "Chest Pain Asymptomatic"],
+            "Resting ECG": ["Resting ECG Normal", "Resting ECG Abnormal", "Resting ECG Hypertrophy"],
+            "Slope of Peak Exercise": ["Peak Exercise Slope Up", "Peak Exercise Slope Flat", "Peak Exercise Slope Down"],
+            "Thal": ["Thal Normal", "Thal Fixed Defect", "Thal Reversable Defect"],
+        }
+
+        for column, new_columns in one_hot_dict.items():
+            temp = pd.get_dummies(dataset[column])
+            temp.columns = new_columns
+            dataset = dataset.join(temp)
+            dataset = dataset.drop(column, axis=1)
 
         return dataset
