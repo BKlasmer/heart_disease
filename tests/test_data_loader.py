@@ -117,11 +117,26 @@ def test_normalisation():
 
 def test_prepare_dataset():
     # Setup - none necessary
-    # Exercise
     Loader = DataLoader()
     dataset = Loader.dataset
+
+    # Exercise
     summary = dataset.describe(include="all")
 
     # Verify
     assert all([a == 1 for a in summary.loc["max"]])
     assert all([a == 303 for a in summary.loc["count"]])
+
+
+def test_balance_data():
+    # Setup
+    Loader = DataLoader()
+    dataset = Loader.dataset
+
+    # Exercise
+    dataset = Loader._balance_data(dataset)
+    heart_disease = len(dataset[dataset["Heart Disease"] == 1])
+    no_heart_disease = len(dataset[dataset["Heart Disease"] == 0])
+
+    # Verify
+    assert heart_disease == no_heart_disease
