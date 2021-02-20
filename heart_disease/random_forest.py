@@ -5,7 +5,9 @@ import pandas as pd
 import numpy as np
 from sklearn.base import BaseEstimator
 from sklearn.ensemble import RandomForestClassifier
+from sklearn.model_selection import KFold, ParameterGrid
 from heart_disease.utils import Logging
+from heart_disease import DataLoader
 
 """ Class to train and predict on the heart disease dataset
 """
@@ -41,6 +43,34 @@ class RandomForest(object):
         # Train the model on training data
         rf.fit(train_features, train_labels)
         score = rf.score(test_features, test_labels)
-        if verbose:
-            self._logger.info(f"Testing Set Score: {score:.4f}")
+        self._logger.info(f"Testing Set Accuracy: {score:.3f}")
+
         return rf, score
+
+    def perform_k_fold_cv(self, parameters: dict, dataset: pd.DataFrame, folds: int=10) -> list:
+
+        param_score = []
+        for param in ParameterGrid(parameters):
+
+            kfold_generator = KFold(n_splits=folds)
+            fold_score = []
+            for train_index, test_index in kfold_generator.split(dataset):
+                # Create the splits
+                train_set = dataset.iloc[train_index, :]
+                test_set = dataset.iloc[test_index, :]
+
+                # Balance the dataset
+                train_set = DataLoader.balance_data(train_set)
+                train_labels, train_features, _ = DataLoader.features_and_labels_to_numpy(train_set)
+                test_labels, test_features, _ = DataLoader.features_and_labels_to_numpy(test_set)
+
+                # Train the model
+                _, score = self.train_random_forest_classifier(train_features, train_labels, test_features, test_labels, param["n_estimators"], param["max_depth"], param["max_features"])
+                fold_score.append(score)
+
+            self._logger.info(f"{folds}-fold Result. n_estimators: {param['n_estimators']}, max_depth: {param['max_depth']}, max_features: {param['max_features']}, accuracy: {np.mean(fold_score):.2f} +/- {np.std(fold_score):.2f}")
+            param_score.append((np.mean(fold_score), np.std(fold_score), param["n_estimators"], param["max_depth"], param["max_features"]))
+
+        return param_score
+
+        
