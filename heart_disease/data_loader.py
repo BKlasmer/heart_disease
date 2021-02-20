@@ -43,20 +43,26 @@ class DataLoader(object):
 
         return dataset
 
-    def split_dataset(self, test_size: float = 0.2, balance: bool = True, random_state: int = 42):
+    def split_dataset(self, test_size: float = 0.2, balance: bool = True, split_labels: bool = True, random_state: int = 42):
         train, test = train_test_split(self.dataset, test_size=test_size, random_state=random_state)
         if balance:
-            train = self._balance_data(train, random_state)
+            train = self.balance_data(train, random_state)
 
-        train_labels, train_features, _ = self._features_and_labels_to_numpy(train)
-        test_labels, test_features, _ = self._features_and_labels_to_numpy(test)
+        if split_labels:
+            train_labels, train_features, _ = self.features_and_labels_to_numpy(train)
+            test_labels, test_features, _ = self.features_and_labels_to_numpy(test)
 
-        self._logger.info(f"Training Features Shape: {train_features.shape}")
-        self._logger.info(f"Training Labels Shape: {train_labels.shape}")
-        self._logger.info(f"Testing Features Shape: {test_features.shape}")
-        self._logger.info(f"Testing Labels Shape: {test_labels.shape}")
+            self._logger.info(f"Training Features Shape: {train_features.shape}")
+            self._logger.info(f"Training Labels Shape: {train_labels.shape}")
+            self._logger.info(f"Testing Features Shape: {test_features.shape}")
+            self._logger.info(f"Testing Labels Shape: {test_labels.shape}")
 
-        return train_features, train_labels, test_features, test_labels
+            return train_features, train_labels, test_features, test_labels
+
+        self._logger.info(f"Training Shape: {train.shape}")
+        self._logger.info(f"Testing Shape: {test.shape}")
+
+        return train, test
 
     def _ingest_data(self) -> pd.DataFrame:
         """Ingests the processed Cleveland dataset from https://archive.ics.uci.edu/ml/datasets/Heart+Disease
@@ -168,7 +174,8 @@ class DataLoader(object):
 
         return dataset
 
-    def _balance_data(self, train_set: pd.DataFrame, random_state: int = 42) -> pd.DataFrame:
+    @staticmethod
+    def balance_data(train_set: pd.DataFrame, random_state: int = 42) -> pd.DataFrame:
         heart_disease = train_set[train_set["Heart Disease"] == 1]
         no_heart_disease = train_set[train_set["Heart Disease"] == 0]
 
@@ -184,7 +191,8 @@ class DataLoader(object):
 
         return train_set
 
-    def _features_and_labels_to_numpy(self, dataset):
+    @staticmethod
+    def features_and_labels_to_numpy(dataset):
         labels = np.array(dataset["Heart Disease"])
         dataset = dataset.drop("Heart Disease", axis=1)
         
