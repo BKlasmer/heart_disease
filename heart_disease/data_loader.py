@@ -77,7 +77,7 @@ class DataLoader(object):
     def _features_and_labels_to_numpy(self, dataset):
         labels = np.array(dataset["Heart Disease"])
 
-        dataset.drop("Heart Disease", axis=1)
+        dataset = dataset.drop("Heart Disease", axis=1)
         features = np.array(dataset)
         feature_columns = list(dataset.columns)
         return labels, features, feature_columns
