@@ -134,7 +134,7 @@ def test_balance_data():
     dataset = Loader.dataset
 
     # Exercise
-    dataset = Loader._balance_data(dataset)
+    dataset = Loader.balance_data(dataset)
     heart_disease = len(dataset[dataset["Heart Disease"] == 1])
     no_heart_disease = len(dataset[dataset["Heart Disease"] == 0])
 
