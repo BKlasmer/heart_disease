@@ -43,13 +43,38 @@ class DataLoader(object):
 
         return dataset
 
-    def _features_and_labels_to_numpy(self):
-        dataset = self._dataset
+    def split_dataset(self, test_size: float = 0.2, balance: bool = True, random_state: int = 42):
+        train, test = train_test_split(self.dataset, test_size=test_size, random_state=random_state)
+        if balance:
+            train = self._balance_data(train, random_state)
+
+        y_train, x_train, _ = self._features_and_labels_to_numpy(train)
+        y_test, x_test, _ = self._features_and_labels_to_numpy(test)
+
+        return x_train, y_train, x_test, y_test
+
+    def _balance_data(self, train_set: pd.DataFrame, random_state: int = 42) -> pd.DataFrame:
+        heart_disease = train_set[train_set["Heart Disease"] == 1]
+        no_heart_disease = train_set[train_set["Heart Disease"] == 0]
+
+        max_samples = max(len(heart_disease), len(no_heart_disease))
+
+        # Upsample to balance
+        if len(heart_disease) < len(no_heart_disease):
+            heart_disease = resample(heart_disease, replace=True, n_samples=max_samples, random_state=random_state)
+        else:
+            no_heart_disease = resample(no_heart_disease, replace=True, n_samples=max_samples, random_state=random_state)
+
+        train_set = pd.concat([heart_disease, no_heart_disease])
+
+        return train_set
+
+    def _features_and_labels_to_numpy(self, dataset):
         labels = np.array(dataset["Heart Disease"])
 
         dataset.drop("Heart Disease", axis=1)
         features = np.array(dataset)
-        feature_columns = list(features.columns)
+        feature_columns = list(dataset.columns)
         return labels, features, feature_columns
 
     def _ingest_data(self) -> pd.DataFrame:
