@@ -19,7 +19,12 @@ class DataLoader(object):
         dataset = self._handle_missing_data(dataset)
         dataset = self._handle_categorical(dataset)
         dataset = self._apply_normalisation(dataset)
-        
+
+        # Change heart disease to binary
+        heart_disease = pd.DataFrame([1 if x >= 1 else 0 for x in dataset["Heart Disease"].to_list()], columns=["Heart Disease"])
+        dataset = dataset.drop("Heart Disease", axis=1)
+        dataset = dataset.join(heart_disease)
+
         return dataset
 
     def _ingest_data(self) -> pd.DataFrame:
