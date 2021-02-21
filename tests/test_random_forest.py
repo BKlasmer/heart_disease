@@ -32,7 +32,7 @@ def test_evaluate_fbeta():
     assert_array_almost_equal(actual, desired)
     # Cleanup - none necessary
 
-def test_invariance_age():
+def test_directional_change_age():
     # Setup
     with open("data/rf_model.pkl", "rb") as f:
         model = pickle.load(f)
