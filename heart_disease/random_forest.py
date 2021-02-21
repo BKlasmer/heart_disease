@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 from sklearn.base import BaseEstimator
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import KFold, ParameterGrid
-from sklearn.metrics import roc_curve, auc
+from sklearn.metrics import roc_curve, auc, fbeta_score
 from heart_disease.utils import Logging
 from heart_disease import DataLoader
 
@@ -75,13 +75,14 @@ class RandomForest(object):
 
         return param_score
 
-    def evaluate_model(self, model: BaseEstimator, test_features: np.ndarray, test_labels: np.ndarray):
+    def evaluate_model(self, model: BaseEstimator, test_features: np.ndarray, test_labels: np.ndarray, betas: list):
 
         predicted_probabilities = model.predict_proba(test_features)[:,1]
         fpr, tpr, thresholds = roc_curve(test_labels, predicted_probabilities)
         roc_auc = auc(fpr, tpr)
 
-        plt.figure(figsize=[12,8])
+        plt.figure(figsize=[15,6])
+        plt.subplot(1,2,1)
         plt.plot(fpr, tpr, color='darkorange', label=f"ROC Curve (area = {roc_auc:.2f})")
         plt.plot([0, 1], [0, 1], color='navy', linestyle='--')
         plt.xlim([-0.02, 1.0])
@@ -90,6 +91,29 @@ class RandomForest(object):
         plt.ylabel('True Positive Rate')
         plt.title('ROC Curve')
         plt.legend(loc="lower right")
+
+        plt.subplot(1,2,2)
+
+        for beta in betas:
+            f_beta = self.evaluate_fbeta(test_labels, predicted_probabilities, beta)
+            plt.plot(np.linspace(0, 1, 50), f_beta, label=f"Beta = {beta}")
+
+        plt.ylim([0.0, 1.05])
+        plt.xlabel('Thresholds')
+        plt.ylabel('F-Beta Score')
+        plt.title('F-Beta')
+        plt.legend(loc="lower right")
+
+
+    @staticmethod
+    def evaluate_fbeta(test_labels: np.ndarray, predicted_probabilities: np.ndarray, beta: float) -> list:
+
+        f_beta = []
+        for threshold in np.linspace(0, 1, 50):
+            binary_predictions = [1 if x >= threshold else 0 for x in predicted_probabilities]
+            f_beta.append(fbeta_score(test_labels, binary_predictions, beta=beta))
+
+        return f_beta
 
 
         
