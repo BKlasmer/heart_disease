@@ -3,9 +3,11 @@
 
 import pandas as pd
 import numpy as np
+import matplotlib.pyplot as plt
 from sklearn.base import BaseEstimator
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import KFold, ParameterGrid
+from sklearn.metrics import roc_curve, auc
 from heart_disease.utils import Logging
 from heart_disease import DataLoader
 
@@ -16,7 +18,7 @@ from heart_disease import DataLoader
 class RandomForest(object):
     def __init__(self, logger_level: str = "INFO") -> None:
         self._logger = Logging().create_logger(logger_name="Random Forest", logger_level=logger_level)
-        self._logger.info("Initialise the Random Forest")
+        self._logger.info("Initialise the Random Forest Class")
 
     def train_random_forest_classifier(
         self,
@@ -72,5 +74,22 @@ class RandomForest(object):
             param_score.append((np.mean(fold_score), np.std(fold_score), param["n_estimators"], param["max_depth"], param["max_features"]))
 
         return param_score
+
+    def evaluate_model(self, model: BaseEstimator, test_features: np.ndarray, test_labels: np.ndarray):
+
+        predicted_probabilities = model.predict_proba(test_features)[:,1]
+        fpr, tpr, thresholds = roc_curve(test_labels, predicted_probabilities)
+        roc_auc = auc(fpr, tpr)
+
+        plt.figure(figsize=[12,8])
+        plt.plot(fpr, tpr, color='darkorange', label=f"ROC Curve (area = {roc_auc:.2f})")
+        plt.plot([0, 1], [0, 1], color='navy', linestyle='--')
+        plt.xlim([-0.02, 1.0])
+        plt.ylim([0.0, 1.05])
+        plt.xlabel('False Positive Rate')
+        plt.ylabel('True Positive Rate')
+        plt.title('ROC Curve')
+        plt.legend(loc="lower right")
+
 
         
