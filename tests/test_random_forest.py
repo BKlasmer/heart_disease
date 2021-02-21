@@ -50,3 +50,22 @@ def test_invariance_age():
     # Verify
     assert higher_age >= lower_age
     # Cleanup - none necessary
+
+def test_directional_change_vessels():
+    # Setup
+    with open("data/rf_model.pkl", "rb") as f:
+        model = pickle.load(f)
+
+    dataloader = DataLoader()
+    dataset = dataloader.dataset
+    _, features, _ = dataloader.features_and_labels_to_numpy(dataset)
+    test_feature = features[0,:]
+
+    # Exercise
+    vessels = model.predict_proba(test_feature.reshape(1, -1))[0,1]
+    test_feature[8] += 0.1 # Increase number of major vessels
+    more_vessels = model.predict_proba(test_feature.reshape(1, -1))[0,1]
+
+    # Verify
+    assert vessels <= more_vessels
+    # Cleanup - none necessary
