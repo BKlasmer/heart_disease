@@ -8,6 +8,7 @@ from sklearn.base import BaseEstimator
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import KFold, ParameterGrid
 from sklearn.metrics import roc_curve, auc, fbeta_score
+from typing import Tuple
 from heart_disease.utils import Logging
 from heart_disease import DataLoader
 
@@ -20,7 +21,7 @@ class RandomForest(object):
         self._logger = Logging().create_logger(logger_name="Random Forest", logger_level=logger_level)
         self._logger.info("Initialise the Random Forest Class")
 
-    def train_random_forest_classifier(
+    def train(
         self,
         train_features: np.ndarray,
         train_labels: np.ndarray,
@@ -67,7 +68,7 @@ class RandomForest(object):
                 test_labels, test_features, _ = DataLoader.features_and_labels_to_numpy(test_set)
 
                 # Train the model
-                _, score = self.train_random_forest_classifier(train_features, train_labels, test_features, test_labels, param["n_estimators"], param["max_depth"], param["max_features"])
+                _, score = self.train(train_features, train_labels, test_features, test_labels, param["n_estimators"], param["max_depth"], param["max_features"])
                 fold_score.append(score)
 
             self._logger.info(f"{folds}-fold Result. n_estimators: {param['n_estimators']}, max_depth: {param['max_depth']}, max_features: {param['max_features']}, accuracy: {np.mean(fold_score):.2f} +/- {np.std(fold_score):.2f}")
@@ -95,8 +96,8 @@ class RandomForest(object):
         plt.subplot(1,2,2)
 
         for beta in betas:
-            f_beta = self.evaluate_fbeta(test_labels, predicted_probabilities, beta)
-            plt.plot(np.linspace(0, 1, 50), f_beta, label=f"Beta = {beta}")
+            f_beta, x_range = self.evaluate_fbeta(test_labels, predicted_probabilities, beta)
+            plt.plot(x_range, f_beta, label=f"Beta = {beta}")
 
         plt.ylim([0.0, 1.05])
         plt.xlabel('Thresholds')
@@ -116,14 +117,15 @@ class RandomForest(object):
         plt.title('Feature Importance')
 
     @staticmethod
-    def evaluate_fbeta(test_labels: np.ndarray, predicted_probabilities: np.ndarray, beta: float) -> list:
+    def evaluate_fbeta(test_labels: np.ndarray, predicted_probabilities: np.ndarray, beta: float) -> Tuple[list, np.ndarray]:
 
         f_beta = []
-        for threshold in np.linspace(0, 1, 50):
+        x_range = np.linspace(0, 1, 100)
+        for threshold in x_range:
             binary_predictions = [1 if x >= threshold else 0 for x in predicted_probabilities]
             f_beta.append(fbeta_score(test_labels, binary_predictions, beta=beta))
 
-        return f_beta
+        return f_beta, x_range
 
 
         
