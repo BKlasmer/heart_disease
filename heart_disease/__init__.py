@@ -1,1 +1,2 @@
 from heart_disease.data_loader import DataLoader
+from heart_disease.random_forest import RandomForest

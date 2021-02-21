@@ -3,7 +3,10 @@
 
 import pandas as pd
 import numpy as np
+from sklearn.utils import resample
+from sklearn.model_selection import train_test_split
 from heart_disease.utils import Logging
+
 
 """ Class to ingest UCI Heart Disease Data Set - https://archive.ics.uci.edu/ml/datasets/Heart+Disease
 """
@@ -39,6 +42,27 @@ class DataLoader(object):
         dataset = dataset.join(heart_disease)
 
         return dataset
+
+    def split_dataset(self, test_size: float = 0.2, balance: bool = True, split_labels: bool = True, random_state: int = 42):
+        train, test = train_test_split(self.dataset, test_size=test_size, random_state=random_state)
+        if balance:
+            train = self.balance_data(train, random_state)
+
+        if split_labels:
+            train_labels, train_features, _ = self.features_and_labels_to_numpy(train)
+            test_labels, test_features, _ = self.features_and_labels_to_numpy(test)
+
+            self._logger.info(f"Training Features Shape: {train_features.shape}")
+            self._logger.info(f"Training Labels Shape: {train_labels.shape}")
+            self._logger.info(f"Testing Features Shape: {test_features.shape}")
+            self._logger.info(f"Testing Labels Shape: {test_labels.shape}")
+
+            return train_features, train_labels, test_features, test_labels
+
+        self._logger.info(f"Training Shape: {train.shape}")
+        self._logger.info(f"Testing Shape: {test.shape}")
+
+        return train, test
 
     def _ingest_data(self) -> pd.DataFrame:
         """Ingests the processed Cleveland dataset from https://archive.ics.uci.edu/ml/datasets/Heart+Disease
@@ -149,6 +173,32 @@ class DataLoader(object):
             dataset[column] = self._minmax(column_values)
 
         return dataset
+
+    @staticmethod
+    def balance_data(train_set: pd.DataFrame, random_state: int = 42) -> pd.DataFrame:
+        heart_disease = train_set[train_set["Heart Disease"] == 1]
+        no_heart_disease = train_set[train_set["Heart Disease"] == 0]
+
+        max_samples = max(len(heart_disease), len(no_heart_disease))
+
+        # Upsample to balance
+        if len(heart_disease) < len(no_heart_disease):
+            heart_disease = resample(heart_disease, replace=True, n_samples=max_samples, random_state=random_state)
+        else:
+            no_heart_disease = resample(no_heart_disease, replace=True, n_samples=max_samples, random_state=random_state)
+
+        train_set = pd.concat([heart_disease, no_heart_disease])
+
+        return train_set
+
+    @staticmethod
+    def features_and_labels_to_numpy(dataset):
+        labels = np.array(dataset["Heart Disease"])
+        dataset = dataset.drop("Heart Disease", axis=1)
+        
+        features = np.array(dataset)
+        feature_columns = list(dataset.columns)
+        return labels, features, feature_columns
 
     @staticmethod
     def _minmax(column_values: np.ndarray) -> np.ndarray:
