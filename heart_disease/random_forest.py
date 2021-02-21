@@ -75,7 +75,7 @@ class RandomForest(object):
 
         return param_score
 
-    def evaluate_model(self, model: BaseEstimator, test_features: np.ndarray, test_labels: np.ndarray, betas: list):
+    def evaluate_model(self, model: BaseEstimator, test_features: np.ndarray, test_labels: np.ndarray, betas: list) -> float:
 
         predicted_probabilities = model.predict_proba(test_features)[:,1]
         fpr, tpr, thresholds = roc_curve(test_labels, predicted_probabilities)
@@ -104,6 +104,16 @@ class RandomForest(object):
         plt.title('F-Beta')
         plt.legend(loc="lower right")
 
+        return roc_auc
+
+    def plot_feature_importance(self, model: BaseEstimator, feature_list: list) -> None:
+        feature_importance = model.feature_importances_
+        ind = np.arange(len(feature_importance))
+        plt.figure(figsize=[12,8])
+        plt.bar(ind, feature_importance)
+        plt.xticks(ind, feature_list, rotation='vertical')
+        plt.ylabel('Feature Weight')
+        plt.title('Feature Importance')
 
     @staticmethod
     def evaluate_fbeta(test_labels: np.ndarray, predicted_probabilities: np.ndarray, beta: float) -> list:
