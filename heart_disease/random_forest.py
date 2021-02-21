@@ -33,6 +33,22 @@ class RandomForest(object):
         verbose=False,
         random_state=42,
     ) -> BaseEstimator:
+        """Train a random forest
+
+        Args:
+            train_features (np.ndarray): Features to train on
+            train_labels (np.ndarray): Labels to train on 
+            test_features (np.ndarray): Features to test on
+            test_labels (np.ndarray): Labels to test on
+            n_estimators (int, optional): Number of trees in the forest. Defaults to 1000.
+            max_depth (int, optional): Maximum depth of each tree. Defaults to None.
+            max_features (int, optional): Maximum number of features to use for each tree. Defaults to None.
+            verbose (bool, optional): Defaults to False.
+            random_state (int, optional): Random Seed. Defaults to 42.
+
+        Returns:
+            BaseEstimator: Trained random forest
+        """
         
         rf = RandomForestClassifier(
             n_estimators=n_estimators,
@@ -51,6 +67,16 @@ class RandomForest(object):
         return rf, score
 
     def perform_k_fold_cv(self, parameters: dict, dataset: pd.DataFrame, folds: int=10) -> list:
+        """Perform K-fold cross validation with a parameter grid search
+
+        Args:
+            parameters (dict): Parameters to search over
+            dataset (pd.DataFrame): Dataset to run cross validation over
+            folds (int, optional): Number of folds. Defaults to 10.
+
+        Returns:
+            list: Average k-fold cross validation accuracy and standard deviation for each parameter combination
+        """
 
         param_score = []
         for param in ParameterGrid(parameters):
@@ -77,7 +103,17 @@ class RandomForest(object):
         return param_score
 
     def evaluate_model(self, model: BaseEstimator, test_features: np.ndarray, test_labels: np.ndarray, betas: list) -> float:
+        """Plot AUC and calculate AUROC. Plot F-beta scores over a range of thresholds and beta values.
 
+        Args:
+            model (BaseEstimator): Trained random forest model to evaluate
+            test_features (np.ndarray): Features to test on
+            test_labels (np.ndarray): Labels to test on
+            betas (list): Beta values to evaluate against
+
+        Returns:
+            float: AUROC score
+        """
         predicted_probabilities = model.predict_proba(test_features)[:,1]
         fpr, tpr, thresholds = roc_curve(test_labels, predicted_probabilities)
         roc_auc = auc(fpr, tpr)
@@ -108,6 +144,12 @@ class RandomForest(object):
         return roc_auc
 
     def plot_feature_importance(self, model: BaseEstimator, feature_list: list) -> None:
+        """Plots the feature importance
+
+        Args:
+            model (BaseEstimator): Trained random forest model
+            feature_list (list): List of feature names
+        """
         feature_importance = model.feature_importances_
         ind = np.arange(len(feature_importance))
         plt.figure(figsize=[12,8])
@@ -118,7 +160,17 @@ class RandomForest(object):
 
     @staticmethod
     def evaluate_fbeta(test_labels: np.ndarray, predicted_probabilities: np.ndarray, beta: float, x_range: np.ndarray) -> Tuple[list, np.ndarray]:
+        """Evaluate F-beta score
 
+        Args:
+            test_labels (np.ndarray): Labels to test on
+            predicted_probabilities (np.ndarray): Predicted probabilities of test set
+            beta (float): Beta value to evaluate
+            x_range (np.ndarray): Range of thresholds to test
+
+        Returns:
+            Tuple[list, np.ndarray]: List of F-beta scores, and array of thresholds tested
+        """
         f_beta = []
         for threshold in x_range:
             binary_predictions = [1 if x >= threshold else 0 for x in predicted_probabilities]
