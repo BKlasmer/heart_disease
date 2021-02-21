@@ -94,9 +94,9 @@ class RandomForest(object):
         plt.legend(loc="lower right")
 
         plt.subplot(1,2,2)
-
+        x_range = np.linspace(0, 1, 100)
         for beta in betas:
-            f_beta, x_range = self.evaluate_fbeta(test_labels, predicted_probabilities, beta)
+            f_beta, x_range = self.evaluate_fbeta(test_labels, predicted_probabilities, beta, x_range)
             plt.plot(x_range, f_beta, label=f"Beta = {beta}")
 
         plt.ylim([0.0, 1.05])
@@ -117,10 +117,9 @@ class RandomForest(object):
         plt.title('Feature Importance')
 
     @staticmethod
-    def evaluate_fbeta(test_labels: np.ndarray, predicted_probabilities: np.ndarray, beta: float) -> Tuple[list, np.ndarray]:
+    def evaluate_fbeta(test_labels: np.ndarray, predicted_probabilities: np.ndarray, beta: float, x_range: np.ndarray) -> Tuple[list, np.ndarray]:
 
         f_beta = []
-        x_range = np.linspace(0, 1, 100)
         for threshold in x_range:
             binary_predictions = [1 if x >= threshold else 0 for x in predicted_probabilities]
             f_beta.append(fbeta_score(test_labels, binary_predictions, beta=beta))

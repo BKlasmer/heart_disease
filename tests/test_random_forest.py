@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding: latin-1 -*-
 
+import pickle
 import numpy as np
 from numpy.testing import assert_array_almost_equal
-from heart_disease import RandomForest
+from heart_disease import RandomForest, DataLoader
 
 """ Tests for RandomForest class
 """
@@ -29,4 +30,23 @@ def test_evaluate_fbeta():
 
     # Verify
     assert_array_almost_equal(actual, desired)
+    # Cleanup - none necessary
+
+def test_invariance_age():
+    # Setup
+    with open("data/rf_model.pkl", "rb") as f:
+        model = pickle.load(f)
+
+    dataloader = DataLoader()
+    dataset = dataloader.dataset
+    _, features, _ = dataloader.features_and_labels_to_numpy(dataset)
+    test_feature = features[0,:]
+
+    # Exercise
+    higher_age = model.predict_proba(test_feature.reshape(1, -1))[0,1]
+    test_feature[0] -= 0.1 # Lower the age
+    lower_age = model.predict_proba(test_feature.reshape(1, -1))[0,1]
+
+    # Verify
+    assert higher_age >= lower_age
     # Cleanup - none necessary
