@@ -67,7 +67,7 @@ class RandomForest(object):
         return rf, score
 
     def perform_k_fold_cv(self, parameters: dict, dataset: pd.DataFrame, folds: int=10) -> list:
-        """Perform K-fold cross validation with a parameter grid search
+        """Perform K-fold cross validation with a parameter grid search. For each fold, the training set is balanced.
 
         Args:
             parameters (dict): Parameters to search over
