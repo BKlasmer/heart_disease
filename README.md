@@ -1,6 +1,6 @@
 # Heart Disease
 
-Add description here.
+Codebase for predicting heart disease (UCI Heart disease dataset - https://archive.ics.uci.edu/ml/datasets/Heart+Disease) with a random forest. Please read instructions below on how to run the codebase.
 
 ## Creating & using the virtual environment
 - First, check that you satisfy the [Dependencies](#dependencies) for this project.
